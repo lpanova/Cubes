@@ -5,12 +5,16 @@ const ObjectId = require('mongodb').ObjectID;
 const CubeSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: false
+    required: true,
+    minlength: 5
+    // match: [/^[A-Za-z0-9]+$/, 'Cube name is not valid!']
   },
   description: {
     type: String,
     required: true,
-    maxlength: 2000
+    maxlength: 2000,
+    minlength: 20
+    // match: [/^[A-Za-z0-9]+$/, 'Cube description is not valid!']
   },
   imageUrl: {
     type: String,

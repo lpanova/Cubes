@@ -111,10 +111,6 @@ button, main a.btn {
     color: white;
 }
 
-/* .details a.btn{
-    width: 28%;
-} */
-
 button:hover {
     background-color: #0B2133;
     color: white;
@@ -188,7 +184,7 @@ input.difficulty {
 }
 
 input.search {
-    width: 50%;
+    width: 99%;
 }
 
 input[type=submit] {
@@ -286,4 +282,24 @@ footer {
     to {
         opacity: 0;
     }
+}
+
+#notifications {
+    margin: 0 auto;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    text-align: center;
+    width: 50%;
+    padding: 0.5%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+    background: rgb(231, 118, 118);
+    color: white;
+    border-radius: 5px;
+    text-decoration: underline;
+}
+#notification-message {
+    color: red;
+    text-align: center;
+    font-size: 0.8em;
 }

@@ -1,13 +1,15 @@
 // TODO: Require Controllers...
 const { Router, request } = require('express');
 const {
+  saveCube,
   getAllCubes,
   getCube,
   updateCube,
   getCubeWithAccessories,
   getSearchCube,
   editCube,
-  deleteCube
+  deleteCube,
+  saveAccessory
 } = require('../controllers/cubes');
 const {
   checkoutAuthentication,
@@ -45,29 +47,48 @@ router.get('/create', checkoutAuthentication, getUserStatus, (req, res) => {
   });
 });
 
-router.post('/create', checkoutAuthenticationJSON, (req, res) => {
-  const { name, description, imageUrl, difficultyLevel } = req.body;
+getUserStatus,
+  router.post(
+    '/create',
+    checkoutAuthenticationJSON,
+    getUserStatus,
+    async (req, res) => {
+      const error = await saveCube(req, res);
 
-  const token = req.cookies['aid'];
-  const decodetObject = jwt.verify(token, privatekey);
-  const cube = new Cube({
-    name,
-    description,
-    imageUrl,
-    difficulty: difficultyLevel,
-    creatorId: decodetObject.userID
-  });
+      if (error) {
+        return res.render('create', {
+          error:
+            'Name sсhould be at least 5 characters long , description schould be between 20 and 2000 charachters long and imageURl is required',
+          isLoggedIn: req.isLoggedIn
+        });
+      } else {
+        res.redirect('/');
+        return;
+      }
 
-  cube.save((err) => {
-    if (err) {
-      console.log(err);
-      res.status(400);
-      res.send(err);
-    } else {
-      res.redirect('/');
+      // const { name, description, imageUrl, difficultyLevel } = req.body;
+
+      // const token = req.cookies['aid'];
+      // const decodetObject = jwt.verify(token, privatekey);
+      // const cube = new Cube({
+      //   name,
+      //   description,
+      //   imageUrl,
+      //   difficulty: difficultyLevel,
+      //   creatorId: decodetObject.userID
+      // });
+
+      // cube.save((err) => {
+      //   if (err) {
+      //     console.log(err);
+      //     res.status(400);
+      //     res.send(err);
+      //   } else {
+      //     res.redirect('/');
+      //   }
+      // });
     }
-  });
-});
+  );
 
 router.get('/details/:id', getUserStatus, async (req, res) => {
   const cube = await getCubeWithAccessories(req.params.id);
@@ -120,14 +141,25 @@ router.post(
   '/create/accessory',
   checkoutAuthenticationJSON,
   async (req, res) => {
-    const { name, description, imageUrl } = req.body;
-    const accessory = new Accessory({
-      name,
-      description,
-      imageUrl
-    });
-    await accessory.save();
-    res.redirect('/create/accessory');
+    const error = await saveAccessory(req, res);
+    if (error) {
+      res.render('createAccessory', {
+        error:
+          'Name sсhould be at least 5 characters long , description schould be between 20 and 2000 charachters long and imageURl is required',
+        isLoggedIn: req.isLoggedIn
+      });
+    } else {
+      res.redirect('/create/accessory');
+    }
+
+    // const { name, description, imageUrl } = req.body;
+    // const accessory = new Accessory({
+    //   name,
+    //   description,
+    //   imageUrl
+    // });
+    // await accessory.save();
+    // res.redirect('/create/accessory');
   }
 );
 
@@ -160,13 +192,21 @@ router.post('/attach/accessory/:id', async (req, res) => {
   res.redirect('/');
 });
 
-router.post('/search', checkoutAuthenticationJSON, async (req, res) => {
+router.post('/search', getUserStatus, async (req, res) => {
   const { search } = req.body;
   const cubes = await getSearchCube(search);
 
-  res.render('search', {
-    cubes: cubes
-  });
+  if (cubes.length === 0) {
+    res.render('search', {
+      error: 'There are not suche cubes',
+      isLoggedIn: req.isLoggedIn
+    });
+  } else {
+    res.render('search', {
+      cubes: cubes,
+      isLoggedIn: req.isLoggedIn
+    });
+  }
 });
 
 router.get('/logout', function (req, res) {

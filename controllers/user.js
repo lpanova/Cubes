@@ -10,37 +10,58 @@ const saveUser = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hashSync(password, salt);
 
-  const user = new User({
-    username,
-    password: hashedPassword
-  });
+  try {
+    const user = new User({
+      username,
+      password: hashedPassword
+    });
 
-  const userObject = await user.save();
+    const userObject = await user.save();
+    const token = jwt.sign(
+      { userID: user._id, userName: userObject.username },
+      privatekey
+    );
 
-  const token = jwt.sign(
-    { userID: user._id, userName: userObject.username },
-    privatekey
-  );
-
-  res.cookie('aid', token);
-  return true;
+    res.cookie('aid', token);
+    return true;
+  } catch (error) {
+    return {
+      error: true,
+      message: error
+    };
+  }
 };
 
 const verifyUser = async (req, res) => {
   const { username, password } = req.body;
+  try {
+    //get user by username
+    const user = await User.findOne({ username });
 
-  //get user by username
-  const user = await User.findOne({ username });
-
-  const status = await bcrypt.compare(password, user.password);
-  if (status) {
-    const token = jwt.sign(
-      { userID: user._id, userName: user.username },
-      privatekey
-    );
-    res.cookie('aid', token);
+    if (!user) {
+      return {
+        error: true,
+        message: 'There is not such user!'
+      };
+    }
+    const status = await bcrypt.compare(password, user.password);
+    if (status) {
+      const token = jwt.sign(
+        { userID: user._id, userName: user.username },
+        privatekey
+      );
+      res.cookie('aid', token);
+    }
+    return {
+      error: status,
+      message: status || 'Wrong password'
+    };
+  } catch (error) {
+    return {
+      error: true,
+      message: 'There is not such user!'
+    };
   }
-  return status;
 };
 
 const checkoutAuthentication = (req, res, next) => {
@@ -105,5 +126,6 @@ module.exports = {
   checkoutAuthentication,
   checkoutAuthenticationJSON,
   checkGuestAccess,
-  getUserStatus
+  getUserStatus,
+  logout
 };

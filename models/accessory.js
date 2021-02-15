@@ -5,12 +5,14 @@ const ObjectId = require('mongodb').ObjectID;
 const AccessorySchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    minlength: 5
   },
   description: {
     type: String,
     regrequireduired: true,
-    maxlength: 2000
+    maxlength: 2000,
+    minlength: 20
   },
   imageUrl: {
     type: String,

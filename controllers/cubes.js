@@ -1,6 +1,54 @@
 const { findById } = require('../models/cube');
 const Cube = require('../models/cube');
+const Accessory = require('../models/accessory');
 const Search = require('../models/search');
+const jwt = require('jsonwebtoken');
+const privatekey = 'Cube';
+
+const saveAccessory = async (req, res) => {
+  const { name, description, imageUrl } = req.body;
+
+  try {
+    const accessory = new Accessory({
+      name,
+      description,
+      imageUrl
+    });
+    console.log(accessory);
+    const saveAccessory = await accessory.save(accessory);
+  } catch (error) {
+    console.log(error);
+    return {
+      error: true,
+      message: error
+    };
+  }
+};
+
+const saveCube = async (req, res) => {
+  const { name, description, imageUrl, difficultyLevel } = req.body;
+
+  const token = req.cookies['aid'];
+  const decodetObject = jwt.verify(token, privatekey);
+  try {
+    const cube = new Cube({
+      name,
+      description,
+      imageUrl,
+      difficulty: difficultyLevel,
+      creatorId: decodetObject.userID
+    });
+    console.log(cube);
+    const saveCube = await cube.save(cube);
+    console.log(saveCube);
+    // return saveCube;
+  } catch (error) {
+    return {
+      error: true,
+      message: error
+    };
+  }
+};
 
 const getAllCubes = async () => {
   const cubes = await Cube.find();
@@ -51,11 +99,13 @@ const deleteCube = async (id) => {
 };
 
 module.exports = {
+  saveCube,
   getAllCubes,
   getCube,
   updateCube,
   getCubeWithAccessories,
   getSearchCube,
   editCube,
-  deleteCube
+  deleteCube,
+  saveAccessory
 };
